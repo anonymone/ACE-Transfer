@@ -1,0 +1,9 @@
+  
+# files
+*.pyc
+
+# folder 
+/Experiments/
+/Res/Dataset/
+/ENV/
+.vscode/settings.json
