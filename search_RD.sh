@@ -5,9 +5,9 @@
 Experiment_NOTE
 
 MODE=EXPERIMENT
-DEVICE=cuda:3
+DEVICE=cuda:0
 
-python3 search_RD.py --seed=5 \
+python3 search_RD.py --seed=0 \
                     --save_root=./Experiments/ \
                     --pop_size=1200 \
                     --layers=1 \

@@ -121,6 +121,9 @@ evaluator = EA_eval(save_root=args.save_root,
                     lr_min=args.lr_min,
                     lr_max=args.lr_max,
                     epochs=args.epochs)
+
+evaluator.set_mode(args.mode)
+
 engine = NSGA2
 
 
@@ -139,46 +142,14 @@ if args.surrogate_allowed:
 else:
     surrogate_schedule = []
 
-# Expelliarmus
-#q = Quotes()
-
 total_time = 0
 for gen in range(args.generations):
     # record time cost
     s_time = time.time()
     logging.info("[Generation{0:>2d}]".format(gen))
-
-    # search by surrogate
-    if gen in surrogate_schedule:
-        evaluator.set_mode('SURROGATE')
-        surrogate_pop = deepcopy(population)
-        topk_ind = surrogate_pop.get_topk(k=args.surrogate_preserve_topk)
-        surrogate_pop.remove_ind()
-        surrogate_pop.add_ind(topk_ind)
-        for _ in range(int(args.pop_size/5)):
-            surrogate_pop.new_pop()
-        for s_gen in range(args.surrogate_search_times):
-            surrogate_pop.new_pop()
-            evaluator.evaluate(surrogate_pop.get_ind(),
-                               surrogate_model=seq2rank)
-            _, rm_inds = engine.enviromentalSeleection(
-                surrogate_pop.to_matrix()[:, [0, -1]], args.pop_size)
-            surrogate_pop.remove_ind(rm_inds)
-            surrogate_pop.save(save_path=os.path.join(
-                args.save_root, 'sg_populations'), file_name='sg_population_gen{0}_s_gen{1}'.format(gen, s_gen), mode='SURROGATE')
-        population.add_ind(surrogate_pop.get_topk(
-            k=args.surrogate_preserve_topk, obj_select=2))
-        evaluator.set_mode(args.mode)
-    else:
-        population.new_pop()
-    evaluator.set_mode(args.mode)
+    
+    population.new_pop()
     evaluator.evaluate(population.get_ind())
-
-    if args.surrogate_allowed:
-        # train Seq2Rank
-        seq2rank.update_dataset([(seq2rank.input_preprocess(
-            ind.to_string()), ind.get_fitness()[0]) for ind in population.get_ind()])
-        seq2rank.train(run_time=gen)
 
     _, rm_inds = engine.enviromentalSeleection(
         population.to_matrix(), args.pop_size)
