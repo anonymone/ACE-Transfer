@@ -11,6 +11,7 @@ from copy import deepcopy
 #from quotes import Quotes
 
 from Coder.ACE import build_ACE
+from Coder.ACETransfer import build_ACETransfer
 from SearchEngine.EA_Engine import NSGA2, EA_population
 from SearchEngine.Utils import EA_tools
 from Evaluator.EA_evaluator import EA_eval
@@ -104,7 +105,7 @@ population = EA_population(obj_number=args.obj_num,
                            crossover_rate=args.crossover_rate,
                            mutation=EA_tools.ACE_Mutation_V3,
                            crossover=EA_tools.ACE_CrossoverV2,
-                           ind_generator=build_ACE,
+                           ind_generator=build_ACETransfer,
                            ind_params=args)
 
 evaluator = EA_eval(save_root=args.save_root,
