@@ -42,16 +42,14 @@ class ACETransfer(ACE):
             channels = channels,
             keep_prob = keep_prob,
             drop_path_keep_prob = drop_path_keep_prob,
-            use_aux_head = use_aux_head
+            use_aux_head = use_aux_head,
+            code_assist = code_assist
         )
-        self.code_assist = code_assist
-        for name in kwargs.keys():
-            exec("self.{0} = kwargs['{0}']".format(str(name)))
 
     def code_init(self):
         if self.code_assist is not None:
             dec = np.array([
-                self.code_assist.getTop(10)[random.randint(0,10)]
+                self.code_assist.getTop(10)[random.randint(0,9)]
                 if random.random() < 0.8
                 else [np.random.randint(0, 4) if random.random() < 0.8 else np.random.randint(0, 7), np.random.randint(
             low=self.vb[0], high=self.vb[1]), np.random.randint(low=self.vb[0], high=self.vb[1])]
@@ -73,11 +71,23 @@ class transferNASLearningEngin:
         componentMap = dict()
         architrecture = architrecture.replace("<--->", "-").split("-")
         componentSize = len(architrecture)
-        for component in componentMap:
-            if componentMap not in componentMap:
+        for component in architrecture:
+            if component not in componentMap:
                 componentMap[component] = 0.0
             componentMap[component] += 1.0/componentSize
         return componentMap
+
+    def preLoad(self, path):
+        knowledgeBase = list()
+        with open(path) as f:
+            for sample in f.readlines():
+                [architecture, parameter, error] = sample.split(",")
+                #architecture = architecture.replace("<--->","-").split("-")
+                #architecture = np.array([np.array([int(i[0]), int(i[1]), int(i[2])]) for i in [unit.split(".") for unit in architecture]])
+                parameter = float(parameter.replace("M",""))
+                error = float(error)
+                knowledgeBase.append((architecture, parameter, error))
+        return knowledgeBase
 
     def preLearning(self, knowledgeBase, knowledgeDimension=1): #[architecture:string , parameter:float, error: float,...]
         if knowledgeBase is None:
@@ -100,7 +110,8 @@ class transferNASLearningEngin:
                          self.knowledgeMap[metric][component] = [0,0]
                      self.knowledgeMap[metric][component][0] += gama[metric]*proportion
         for metric in self.knowledgeMap:
-            self.knowledgeMap[metric]/sampleSize
+            for component in self.knowledgeMap[metric]:
+                self.knowledgeMap[metric][component][0]/sampleSize
         self.calculateGeneralMetric()
         return True
 
@@ -108,18 +119,25 @@ class transferNASLearningEngin:
         pass
 
     def getTop(self, number):
+        if len(self.knowledgeMap) == 0:
+            raise Exception("TransferNASLearningEngin does not initialized.")
         if self.generalMetric is None:
             self.calculateGeneralMetric()
         componentList = list()
         generalMetricList = list()
         for component, metric in self.generalMetric:
-            componentList.append(np.array([np.float(element) for element in component]))
+            componentList.append(np.array([np.int(element) for element in component.split(".")]))
             generalMetricList.append(metric)
-        index = np.argsort(generalMetricList)
+        index = np.argsort(generalMetricList)[::-1]
+        componentList = np.array(componentList)
+        #generalMetricList = np.array(generalMetricList)
         componentList = componentList[index]
+        #generalMetricList = generalMetricList[index]
         return np.array(componentList[:number])
 
     def calculateGeneralMetric(self):
+        if self.generalMetric is None:
+            self.generalMetric = list()
         generalMetricDic = dict()
         componentSize = len(self.knowledgeMap[0])
 
@@ -127,7 +145,8 @@ class transferNASLearningEngin:
             for component in self.knowledgeMap[metric]:
                 if component not in generalMetricDic:
                     generalMetricDic[component] = 0.0
-                generalMetricDic[component] += self.knowledgeMap[metric][component]
+                generalMetricDic[component] += sum(self.knowledgeMap[metric][component])
+        
         for component in generalMetricDic:
             self.generalMetric.append((component, generalMetricDic[component]/componentSize))
         

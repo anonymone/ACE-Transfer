@@ -99,6 +99,9 @@ class ACE(code):
                  use_aux_head=True,
                  **kwargs):
         super(ACE, self).__init__()
+        for name in kwargs.keys():
+            exec("self.{0} = kwargs['{0}']".format(str(name)))
+
         self.fitness = np.zeros(fitness_size)
         self.vb = value_boundary
         self.unr = unit_number_range
@@ -115,8 +118,6 @@ class ACE(code):
         self.drop_path_keep_prob = drop_path_keep_prob
         self.use_aux_head = use_aux_head
 
-        for name in kwargs.keys():
-            exec("self.{0} = kwargs['{0}']".format(str(name)))
 
     def code_init(self):
         dec = np.array([[np.random.randint(0, 4) if random.random() < 0.8 else np.random.randint(0, 7), np.random.randint(

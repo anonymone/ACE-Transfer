@@ -11,7 +11,7 @@ from copy import deepcopy
 #from quotes import Quotes
 
 from Coder.ACE import build_ACE
-from Coder.ACETransfer import build_ACETransfer
+from Coder.ACETransfer import build_ACETransfer, transferNASLearningEngin
 from SearchEngine.EA_Engine import NSGA2, EA_population
 from SearchEngine.Utils import EA_tools
 from Evaluator.EA_evaluator import EA_eval
@@ -67,6 +67,11 @@ parser.add_argument('--surrogate_step', type=int, default=5)
 parser.add_argument('--surrogate_search_times', type=int, default=10)
 parser.add_argument('--surrogate_preserve_topk', type=int, default=5)
 
+# transfer NAS Engine
+parser.add_argument('--transfer_nas_learning_demension', type=int, default=2)
+parser.add_argument('--transfer_nas_learning_preData_path', type=str, default="./preData/preNetData.txt")
+parser.add_argument('--transfer_nas_learning_engine', default=None)
+
 args = parser.parse_args()
 
 recoder.create_exp_dir(args.save_root)
@@ -98,6 +103,11 @@ np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed(args.seed)
 torch.cuda.manual_seed_all(args.seed)
+
+transferNASEngine = transferNASLearningEngin()
+transferNASEngine.preLearning(knowledgeBase=transferNASEngine.preLoad(args.transfer_nas_learning_preData_path),
+                            knowledgeDimension=args.transfer_nas_learning_demension)
+args.transfer_nas_learning_engine = transferNASEngine
 
 population = EA_population(obj_number=args.obj_num,
                            pop_size=args.pop_size,
