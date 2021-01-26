@@ -112,9 +112,9 @@ class transferNASLearningEngin:
             self.calculateGeneralMetric()
         componentList = list()
         generalMetricList = list()
-        for component, generalMetric in self.generalMetric:
+        for component, metric in self.generalMetric:
             componentList.append(np.array([np.float(element) for element in component]))
-            generalMetricList.append(generalMetric)
+            generalMetricList.append(metric)
         index = np.argsort(generalMetricList)
         componentList = componentList[index]
         return np.array(componentList[:number])
@@ -123,11 +123,11 @@ class transferNASLearningEngin:
         generalMetricDic = dict()
         componentSize = len(self.knowledgeMap[0])
 
-        for metric in self.componentMap:
-            for component in self.componentMap[metric]:
+        for metric in self.knowledgeMap:
+            for component in self.knowledgeMap[metric]:
                 if component not in generalMetricDic:
                     generalMetricDic[component] = 0.0
-                generalMetricDic[component] += self.componentMap[metric][component]
+                generalMetricDic[component] += self.knowledgeMap[metric][component]
         for component in generalMetricDic:
             self.generalMetric.append((component, generalMetricDic[component]/componentSize))
         
