@@ -5,17 +5,15 @@
 Experiment_NOTE
 
 MODE=EXPERIMENT
-DEVICE=cuda:3
+DEVICE=cuda:0
 
-python3 search_RD.py --seed=5 \
+python3 search_RL.py --seed=0 \
                     --save_root=./Experiments/ \
-                    --pop_size=1200 \
                     --layers=1 \
                     --channels=16 \
                     --keep_prob=0.6 \
                     --drop_path_keep_prob=0.8 \
                     --classes=10 \
-                    --obj_num=2 \
                     --mode=$MODE \
                     --data_path=./Res/Dataset/ \
                     --num_work=10 \
@@ -27,4 +25,7 @@ python3 search_RD.py --seed=5 \
                     --lr_max=0.1 \
                     --epochs=25 \
                     --split_train_for_valid=0.8 \
+                    --q_lr=0.1 \
+                    --q_discount_factor=1 \
+                    --q_random_sample=100 \
                     --device=$DEVICE

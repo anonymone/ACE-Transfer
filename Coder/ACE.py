@@ -22,8 +22,6 @@ OPERATIONS = {
     # 4: Identity,
 }
 
-# use base search space
-
 # use large search space
 OPERATIONS_large = {
     4: Conv,  # 1x1
@@ -38,10 +36,12 @@ OPERATIONS_large = {
     13: nn.AvgPool2d,  # 5x5
     14: SepConv,  # 3x3
     15: SepConv,  # 5x5
+    # 14: Identity
 }
 
 # action defined
 ACTION = {
+    # 0: 'change_connection_A_B',
     0: 'add_edge_C',
     1: 'add_node_C',
     2: 'clone_node_a_parallel',
@@ -49,6 +49,8 @@ ACTION = {
     4: 'clone_nodes_A_parallel',
     5: 'clone_nodes_A_squeue',
     6: 'dense_path'
+    # 3: 'substitute_node_B_for_type',  # A will be changed to type
+    # 4: 'deldete_connection_A_B'
 }
 
 
@@ -99,12 +101,13 @@ class ACE(code):
                  use_aux_head=True,
                  **kwargs):
         super(ACE, self).__init__()
-        for name in kwargs.keys():
-            exec("self.{0} = kwargs['{0}']".format(str(name)))
-
         self.fitness = np.zeros(fitness_size)
         self.vb = value_boundary
         self.unr = unit_number_range
+        # self.normal_dec = np.random.randint(low=self.vb[0], high=self.vb[1], size=(
+        #     random.randint(self.unr[0], self.unr[1]), 3))
+        # self.reduct_dec = np.random.randint(low=self.vb[0], high=self.vb[1], size=(
+        #     random.randint(self.unr[0], self.unr[1]), 3))
         self.normal_dec = self.code_init()
         self.reduct_dec = self.code_init()
         self.shape = (self.normal_dec.shape, self.reduct_dec.shape)
@@ -118,6 +121,8 @@ class ACE(code):
         self.drop_path_keep_prob = drop_path_keep_prob
         self.use_aux_head = use_aux_head
 
+        for name in kwargs.keys():
+            exec("self.{0} = kwargs['{0}']".format(str(name)))
 
     def code_init(self):
         dec = np.array([[np.random.randint(0, 4) if random.random() < 0.8 else np.random.randint(0, 7), np.random.randint(
@@ -376,8 +381,12 @@ class ACE_Cell(nn.Module):
                         node_graph[i].append(new_node_id)
                 node_type_tokens[len(node_type_tokens)
                                     ] = self.__parser.get_op_token(node_type)
-
+                # else:
+                #     node_graph[len(node_graph)] = [0]
+                #     node_type_tokens[len(node_type_tokens)
+                #                      ] = node_type_tokens[node_id]
             elif action == 'clone_node_a_squeue':
+                # node_id, node_type = param1 % (len(node_graph)-1)+1, param2
                 node_type, node_id = param1, param2% (len(node_graph)-1)+1
                 new_node_id = len(node_graph)
                 for i in node_graph:
@@ -390,6 +399,7 @@ class ACE_Cell(nn.Module):
             elif action == 'clone_nodes_A_parallel':
                 node_id, path_depth = param1 % (
                     len(node_graph)-1)+1, param2 % 5+1
+                # node_set includes node_id
                 node_set = self.get_node_path(node_graph, node_id, path_depth)
                 if len(node_set) <= 1:
                     continue
@@ -404,6 +414,7 @@ class ACE_Cell(nn.Module):
             elif action == 'clone_nodes_A_squeue':
                 node_id, path_depth = param1 % (
                     len(node_graph)-1)+1, param2 % 5+1
+                # node_set includes node_id
                 node_set = self.get_node_path(node_graph, node_id, path_depth)
                 if len(node_set) <= 1:
                     continue
@@ -422,6 +433,7 @@ class ACE_Cell(nn.Module):
             elif action == 'dense_path':
                 node_id, path_depth = param1 % (
                     len(node_graph)-1)+1, param2 % 5+1
+                # node_set includes node_id
                 node_set = self.get_node_path(node_graph, node_id, path_depth)
                 if len(node_set) <= 1:
                     continue
@@ -434,7 +446,6 @@ class ACE_Cell(nn.Module):
             else:
                 raise Exception(
                     'Encountered the unknown action token: {0}'.format(action))
-
         self.node_type_tokens = node_type_tokens
         # static the concat node
         nodes_all = list(node_graph.keys())
