@@ -18,7 +18,7 @@ def build_ACETransfer(fitness_size, ind_params):
                keep_prob=ind_params.keep_prob,
                drop_path_keep_prob=ind_params.drop_path_keep_prob,
                use_aux_head=ind_params.use_aux_head,
-               code_assist=ind_params.code_assist)
+               code_assist=ind_params.transfer_nas_learning_engine)
 
 class ACETransfer(ACE):
     def __init__(self,
