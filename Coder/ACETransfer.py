@@ -118,7 +118,7 @@ class transferNASLearningEngin:
     def update(self, knowledgeBase):
         pass
 
-    def getTop(self, number):
+    def getTop(self, number, order="INC"):
         if len(self.knowledgeMap) == 0:
             raise Exception("TransferNASLearningEngin does not initialized.")
         if self.generalMetric is None:
@@ -128,9 +128,13 @@ class transferNASLearningEngin:
         for component, metric in self.generalMetric:
             componentList.append(np.array([np.int(element) for element in component.split(".")]))
             generalMetricList.append(metric)
-        index = np.argsort(generalMetricList)[::-1]
+
         componentList = np.array(componentList)
         #generalMetricList = np.array(generalMetricList)
+        if order == "INC":
+            index = np.argsort(generalMetricList)[::-1]
+        else:
+            index = np.argsort(generalMetricList)[::-1]
         componentList = componentList[index]
         #generalMetricList = generalMetricList[index]
         return np.array(componentList[:number])
