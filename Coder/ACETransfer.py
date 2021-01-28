@@ -132,7 +132,7 @@ class transferNASLearningEngin:
         componentList = np.array(componentList)
         #generalMetricList = np.array(generalMetricList)
         if order == "INC":
-            index = np.argsort(generalMetricList)[::-1]
+            index = np.argsort(generalMetricList)
         else:
             index = np.argsort(generalMetricList)[::-1]
         componentList = componentList[index]
