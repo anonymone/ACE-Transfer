@@ -100,8 +100,6 @@ class transferNASLearningEngin:
             sample = knowledgeBase[i]
             gama = sample[1:]
             componentMap = self.parserArchitecture(sample[0])
-
-            self.knowledgeMap
             
             for component in componentMap:
                  proportion = componentMap[component]
@@ -116,7 +114,26 @@ class transferNASLearningEngin:
         return True
 
     def update(self, knowledgeBase):
-        pass
+        if knowledgeBase is None:
+            return False
+        sampleSize = len(knowledgeBase)
+        
+        for i in range(sampleSize):
+            sample = knowledgeBase[i]
+            gama = sample[1:]
+            componentMap = self.parserArchitecture(sample[0])
+        
+            for component in componentMap:
+                proportion = componentMap[component]
+                for metric in self.knowledgeMap:
+                    if component not in self.knowledgeMap[metric].keys():
+                        self.knowledgeMap[metric][component] = [0,0]
+                        self.knowledgeMap[metric][component][0] += gama[metric]*proportion
+                    else:
+                        self.knowledgeMap[metric][component][1] = 0.9*self.knowledgeMap[metric][component][1] + 
+                                                                  0.1*(gama[metric]*proportion-self.knowledgeMap[metric][component][0])
+        self.calculateGeneralMetric()
+        return True
 
     def getTop(self, number, order="INC"):
         if len(self.knowledgeMap) == 0:
