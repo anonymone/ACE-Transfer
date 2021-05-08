@@ -17,8 +17,8 @@ from SearchEngine.Utils import EA_tools
 from Evaluator.EA_evaluator import EA_eval
 from Evaluator.Utils import recoder
 
-from Evaluator.Utils.surrogate import EmbeddingModel as em
-from Evaluator.Utils.surrogate import RankNetDataset, Seq2Rank
+# from Evaluator.Utils.surrogate import EmbeddingModel as em
+# from Evaluator.Utils.surrogate import RankNetDataset, Seq2Rank
 
 # Experiments parameter settings
 parser = argparse.ArgumentParser(
